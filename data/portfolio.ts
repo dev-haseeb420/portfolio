@@ -10,6 +10,7 @@ import {
   Terminal,
   type LucideIcon,
 } from "lucide-react";
+import { BASE_PATH } from "@/lib/site";
 
 /** Core identity and contact details. Reused across metadata, hero, navbar and footer. */
 export const profile = {
@@ -22,7 +23,7 @@ export const profile = {
   location: "Lahore, Punjab, Pakistan",
   email: "muhammadhaseebb854@gmail.com",
   linkedin: "https://www.linkedin.com/in/muhammad-haseeb-960aa8364/",
-  resumeHref: "/resume/muhammad-haseeb-resume.pdf",
+  resumeHref: `${BASE_PATH}/resume/muhammad-haseeb-resume.pdf`,
   resumeFileName: "Muhammad-Haseeb-Resume.pdf",
 } as const;
 

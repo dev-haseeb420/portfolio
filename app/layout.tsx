@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import { profile } from "@/data/portfolio";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { BASE_PATH, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import "./globals.css";
 
@@ -37,6 +37,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: SITE_NAME, url: profile.linkedin }],
   creator: SITE_NAME,
+  icons: {
+    // Explicitly prefixed: Next does not apply `basePath` to metadata icon
+    // hrefs automatically.
+    icon: `${BASE_PATH}/icon.svg`,
+  },
   alternates: {
     canonical: "/",
   },

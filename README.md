@@ -62,7 +62,6 @@ app/
   layout.tsx        Root layout: fonts, metadata, JSON-LD, theme bootstrap
   page.tsx           Assembles all sections for the single page
   globals.css        Design tokens (light/dark), base styles, utilities
-  icon.tsx           Generated favicon (initials mark)
   opengraph-image.tsx Generated Open Graph share image
   robots.ts          robots.txt
   sitemap.ts         sitemap.xml
@@ -71,16 +70,20 @@ components/
   footer.tsx
   hero-visual.tsx    Animated infrastructure topology graphic
   theme-toggle.tsx   Light/dark theme switch
-  theme-script.tsx   No-flash theme bootstrap script
+  icons/             Small custom icons not covered by lucide-react
   sections/          One component per page section
   ui/                Reusable primitives (Button, Badge, Container, Reveal, ...)
 data/
   portfolio.ts       All portfolio content (profile, experience, skills, etc.)
 lib/
-  site.ts            Site-wide metadata constants
+  site.ts            Site-wide metadata constants (SITE_URL, BASE_PATH, ...)
+  theme-init-script.ts  No-flash theme bootstrap script, run via next/script
   utils.ts           Small shared helpers
 public/
   resume/            Downloadable resume PDF
+  icon.svg           Favicon (initials mark)
+.github/workflows/
+  deploy.yml         Builds the static export and deploys it to GitHub Pages
 ```
 
 ## Changing Portfolio Data
@@ -90,8 +93,8 @@ Nearly all text content — name, headline, summary, experience, skills, educati
 components render directly from this data, so no other files need to change for content updates.
 
 Site-wide SEO constants (title, description, canonical URL) live in [`lib/site.ts`](./lib/site.ts).
-Update `SITE_URL` there once the site has a real domain — it feeds `metadataBase`, the sitemap, and
-`robots.txt`.
+Update `SITE_URL` there if the site moves to a different domain or repository — it feeds
+`metadataBase`, the sitemap, `robots.txt` and the Open Graph image.
 
 ## Changing the Resume
 
@@ -100,11 +103,43 @@ Update `SITE_URL` there once the site has a real domain — it feeds `metadataBa
 2. If you change the filename, update `profile.resumeHref` and `profile.resumeFileName` in
    `data/portfolio.ts` — `resumeFileName` controls the filename used when a visitor downloads it.
 
-## Deployment (Vercel)
+## Deployment
 
-1. Push the repository to GitHub (or another Git provider).
-2. Import the project into [Vercel](https://vercel.com/new).
-3. Framework preset: **Next.js** (auto-detected). No extra environment variables are required.
-4. Update `SITE_URL` in `lib/site.ts` to match the deployed domain before shipping, so metadata,
-   the sitemap and the Open Graph image resolve correctly.
-5. Deploy — Vercel builds with `npm run build` and serves the app automatically.
+The app builds as a fully static export (`output: "export"` in `next.config.ts`) — no server
+runtime is required, so it can be hosted on GitHub Pages, Vercel, Netlify, S3, or any static host.
+
+### GitHub Pages (current setup)
+
+The site is deployed automatically to GitHub Pages via
+[`.github/workflows/deploy.yml`](./.github/workflows/deploy.yml):
+
+1. Every push to `main` builds the app with `next build` (producing the static export in `out/`)
+   and publishes it with the official `actions/deploy-pages` action.
+2. The workflow reads the project's Pages base path (e.g. `/portfolio`) via
+   `actions/configure-pages` and passes it in as `NEXT_PUBLIC_BASE_PATH`, which `next.config.ts`
+   and `lib/site.ts` use to prefix internal asset links (`basePath`) correctly.
+3. In the repository settings, **Settings → Pages → Build and deployment → Source** must be set to
+   **GitHub Actions** (done once when the repo is created).
+4. Live URL: **https://dev-haseeb420.github.io/portfolio/**
+
+If the repository is ever renamed or moved to a different account, update `SITE_URL` in
+`lib/site.ts` to match the new URL.
+
+### Building a GitHub Pages export locally
+
+```bash
+NEXT_PUBLIC_BASE_PATH=/portfolio npm run build
+```
+
+This writes the static site to `out/`. `public/.nojekyll` is copied into `out/` automatically so
+GitHub Pages serves the `_next/` asset folder instead of ignoring it.
+
+### Deploying elsewhere (e.g. Vercel, a custom domain)
+
+1. Build without `NEXT_PUBLIC_BASE_PATH` (or leave it unset) so the app is rooted at `/`:
+   ```bash
+   npm run build
+   ```
+2. Update `SITE_URL` in `lib/site.ts` to match the new domain.
+3. Serve the contents of `out/` as a static site (Vercel and Netlify both auto-detect a Next.js
+   static export; for any other static host, upload `out/` directly).
